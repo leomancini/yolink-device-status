@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+        <meta charset='UTF-8'>
+		<title>Internal vs External Weather</title>
+		<link rel='stylesheet/less' href='resources/css/style.less?v=5'>
+		<script src='//cdnjs.cloudflare.com/ajax/libs/less.js/3.11.1/less.min.js'></script>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+	</head>
+	<body>
+		<script src='resources/js/main.js'></script>
+        <script type='text/javascript'>
+            async function getInternalSensors() {
+                const request = await fetch('../api');
+                const response = await request.json();
+
+                return response.temperatureHumiditySensors;
+            }
+
+            async function getInternalWeather(params) {
+                const temperatureHumiditySensors = await getInternalSensors();
+
+                temperatureHumiditySensors.filter((temperatureHumiditySensor) => {
+                    return (temperatureHumiditySensor.metadata.room === params.room);
+                });
+
+                let internalWeatherOutput = {
+                    temperature: null,
+                    humidity: null
+                }
+
+                if (temperatureHumiditySensors[0]) {
+                    const temperatureCelcius = temperatureHumiditySensors[0].data.state.temperature;
+                    const temperatureFahrenheit = (temperatureCelcius * (9/5)) + 32;
+
+                    if (params.units === 'imperial') {
+                        internalWeatherOutput.temperature = temperatureFahrenheit;
+                    } else if (params.units === 'metric') {
+                        internalWeatherOutput.temperature = temperatureCelcius;
+                    }
+
+                    internalWeatherOutput.humidity = temperatureHumiditySensors[0].data.state.humidity;
+                }
+
+
+                return internalWeatherOutput;
+            }
+
+            async function getExternalWeather(params) {
+                const apiKey = window.secrets['OpenWeatherMap'].APIKey;
+                const request = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${params.zipCode},US&units=${params.units}&appid=${apiKey}`);
+                const response = await request.json();
+
+                return response;
+            }
+
+            function formatNumber(number) {
+                let formattedNumber = Math.round(number).toFixed(0);
+
+                return formattedNumber;
+            }
+
+            function generateHeaderBackgroundColor(tempDifference) {
+                const headerBackgroundColors = {
+                    warm: ['#F0A534', '#F07834', '#F04B34'],
+                    cold: ['#40A3DA', '#2283DD', '#145FCF']
+                }
+
+                let headerBackgroundColor = '#E3E3E3';
+
+                if (tempDifference < -20) {
+                    headerBackgroundColor = headerBackgroundColors.cold[2];
+                } else if (tempDifference >= -20 && tempDifference < -10) {
+                    headerBackgroundColor = headerBackgroundColors.cold[1];
+                } else if (tempDifference >= -10 && tempDifference < 0) {
+                    headerBackgroundColor = headerBackgroundColors.cold[0];
+                } else if (tempDifference > 0 && tempDifference <= 10) {
+                    headerBackgroundColor = headerBackgroundColors.warm[0];
+                } else if (tempDifference > 10 && tempDifference <= 20) {
+                    headerBackgroundColor = headerBackgroundColors.warm[1];
+                } else if (tempDifference > 20) {
+                    headerBackgroundColor = headerBackgroundColors.warm[2];
+                }
+
+                return headerBackgroundColor;
+            }
+
+            function generateDifferenceString(params) {
+                let tempDifferenceString = '';
+
+                if (params.tempDifference > 0) {
+                    tempDifferenceString =
+                        `${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel} warmer`;
+                } else {
+                    tempDifferenceString =
+                        `${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel} colder`;
+                }
+
+                let humidityDifferenceString = '';
+
+                if (params.humidityDifference > 0) {
+                    humidityDifferenceString =
+                        `${Math.abs(formatNumber(params.humidityDifference))}% more humid`;
+                } else {
+                    humidityDifferenceString =
+                        `${Math.abs(formatNumber(params.humidityDifference))}% less humid`;
+                }
+
+                return {
+                    tempDifferenceString,
+                    humidityDifferenceString
+                }
+            }
+
+            async function render(params) {
+                const secretsRequest = await fetch('../config/secrets.json');
+                window.secrets = await secretsRequest.json();
+
+                const unitsLabel = params.units === 'imperial' ? 'F' : 'C';
+
+                const internalWeatherBedroom = await getInternalWeather({ room: 'Bedroom', units: params.units });
+                // const internalWeatherBedroom = {
+                //     temperature: 35,
+                //     humidity: 10
+                // };
+                const externalWeather = await getExternalWeather({ zipCode: params.zipCode, units: params.units });
+
+                const tempDifference = internalWeatherBedroom.temperature - externalWeather.main.temp;
+                const humidityDifference = internalWeatherBedroom.humidity - externalWeather.main.humidity;
+
+                let {
+                    tempDifferenceString,
+                    humidityDifferenceString
+                } = generateDifferenceString({
+                    tempDifference,
+                    humidityDifference,
+                    unitsLabel
+                });
+
+                let bodyHTML = `
+                    <div class='header' style='background-color: ${generateHeaderBackgroundColor(tempDifference)};'>
+                        <h1><span class='description'>It's currently</span> <b>${tempDifferenceString}</b> <span class='description'>and</span> <b>${humidityDifferenceString}</b> <span class='description'>in the bedroom than outside in ${externalWeather.name}.</span></h1>
+                    </div>
+                    <h2>Internal (Bedroom)</h2>
+                    <div class='labelValueGroup'>
+                        <label>Temp</label>
+                        <div class='value'>${formatNumber(internalWeatherBedroom.temperature)}° ${unitsLabel}</div>
+                    </div>
+                    <div class='labelValueGroup'>
+                        <label>Humidity</label>
+                        <div class='value'>${formatNumber(internalWeatherBedroom.humidity)}%</div>
+                    </div>
+                    <h2>External (${externalWeather.name})</h2>
+                    <div class='labelValueGroup'>
+                        <label>Temp</label>
+                        <div class='value'>${formatNumber(externalWeather.main.temp)}° ${unitsLabel}</div>
+                    </div>
+                    <div class='labelValueGroup'>
+                        <label>Humidity</label>
+                        <div class='value'>${formatNumber(externalWeather.main.humidity)}%</div>
+                    </div>
+                    <br>
+                    <h2>Difference</h2>
+                    <div class='labelValueGroup'>
+                        <label>Temp</label>
+                        <div class='value'>${tempDifference > 0 ? '+' : ''}${formatNumber(tempDifference)}° ${unitsLabel}</div>
+                    </div>
+                    <div class='labelValueGroup'>
+                        <label>Humidity</label>
+                        <div class='value'>${humidityDifference > 0 ? '+' : ''}${formatNumber(humidityDifference)}%</div>
+                    </div>
+                `;
+
+                document.querySelector('body').innerHTML = bodyHTML;
+            }
+
+            render({
+                units: 'imperial',
+                zipCode: 94115
+            });
+        </script>
+	</body>
+</html>
