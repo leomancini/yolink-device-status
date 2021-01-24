@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
+    <head>
         <meta charset='UTF-8'>
-		<title>Internal vs External Weather</title>
-		<link rel='stylesheet/less' href='resources/css/style.less?v=6'>
-		<script src='//cdnjs.cloudflare.com/ajax/libs/less.js/3.11.1/less.min.js'></script>
-		<meta name='viewport' content='width=device-width, initial-scale=1'>
-	</head>
-	<body>
-		<script src='resources/js/main.js'></script>
+        <title>Internal vs External Weather</title>
+        <link rel='stylesheet/less' href='resources/css/style.less?v=6'>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/less.js/3.11.1/less.min.js'></script>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+    </head>
+    <body>
+        <script src='resources/js/main.js'></script>
         <script type='text/javascript'>
             async function getInternalSensors() {
                 const request = await fetch('../api');
@@ -31,7 +31,7 @@
 
                 if (temperatureHumiditySensors[0]) {
                     const temperatureCelcius = temperatureHumiditySensors[0].data.state.temperature;
-                    const temperatureFahrenheit = (temperatureCelcius * (9/5)) + 32;
+                    const temperatureFahrenheit = (temperatureCelcius * (9 / 5)) + 32;
 
                     if (params.units === 'imperial') {
                         internalWeatherOutput.temperature = temperatureFahrenheit;
@@ -138,45 +138,45 @@
                 });
 
                 document.querySelector('body').innerHTML = `
-                    <div id='container'>
-                        <div class='header' style='background-color: ${generateHeaderBackgroundColor(tempDifference)};'>
-                            <h1><span class='description'>It's currently</span> <b>${differenceStrings.temp}</b> <span class='description'>and</span> <b>${differenceStrings.humidity}</b> <span class='description'>in the bedroom than outside in ${externalWeather.name}.</span></h1>
+                        <div id='container'>
+                            <div class='header' style='background-color: ${generateHeaderBackgroundColor(tempDifference)};'>
+                                <h1><span class='description'>It's currently</span> <b>${differenceStrings.temp}</b> <span class='description'>and</span> <b>${differenceStrings.humidity}</b> <span class='description'>in the bedroom than outside in ${externalWeather.name}.</span></h1>
+                            </div>
+                            <h2>Internal (Bedroom)</h2>
+                            <div class='labelValueGroup temp'>
+                                <label>Temp</label>
+                                <div class='value'>${formatNumber(internalWeatherBedroom.temperature)}° ${unitsLabel}</div>
+                            </div>
+                            <div class='labelValueGroup humidity'>
+                                <label>Humidity</label>
+                                <div class='value'>${formatNumber(internalWeatherBedroom.humidity)}%</div>
+                            </div>
+                            <h2>External (${externalWeather.name})</h2>
+                            <div class='labelValueGroup temp'>
+                                <label>Temp</label>
+                                <div class='value'>${formatNumber(externalWeather.main.temp)}° ${unitsLabel}</div>
+                            </div>
+                            <div class='labelValueGroup humidity'>
+                                <label>Humidity</label>
+                                <div class='value'>${formatNumber(externalWeather.main.humidity)}%</div>
+                            </div>
+                            <br>
+                            <h2>Difference</h2>
+                            <div class='labelValueGroup temp'>
+                                <label>Temp</label>
+                                <div class='value'>${tempDifference > 0 ? '+' : ''}${formatNumber(tempDifference)}° ${unitsLabel}</div>
+                            </div>
+                            <div class='labelValueGroup humidity'>
+                                <label>Humidity</label>
+                                <div class='value'>${humidityDifference > 0 ? '+' : ''}${formatNumber(humidityDifference)}%</div>
+                            </div>
                         </div>
-                        <h2>Internal (Bedroom)</h2>
-                        <div class='labelValueGroup temp'>
-                            <label>Temp</label>
-                            <div class='value'>${formatNumber(internalWeatherBedroom.temperature)}° ${unitsLabel}</div>
-                        </div>
-                        <div class='labelValueGroup humidity'>
-                            <label>Humidity</label>
-                            <div class='value'>${formatNumber(internalWeatherBedroom.humidity)}%</div>
-                        </div>
-                        <h2>External (${externalWeather.name})</h2>
-                        <div class='labelValueGroup temp'>
-                            <label>Temp</label>
-                            <div class='value'>${formatNumber(externalWeather.main.temp)}° ${unitsLabel}</div>
-                        </div>
-                        <div class='labelValueGroup humidity'>
-                            <label>Humidity</label>
-                            <div class='value'>${formatNumber(externalWeather.main.humidity)}%</div>
-                        </div>
-                        <br>
-                        <h2>Difference</h2>
-                        <div class='labelValueGroup temp'>
-                            <label>Temp</label>
-                            <div class='value'>${tempDifference > 0 ? '+' : ''}${formatNumber(tempDifference)}° ${unitsLabel}</div>
-                        </div>
-                        <div class='labelValueGroup humidity'>
-                            <label>Humidity</label>
-                            <div class='value'>${humidityDifference > 0 ? '+' : ''}${formatNumber(humidityDifference)}%</div>
-                        </div>
-                    </div>
-                `;
+                    `;
             }
 
             render({
                 units: 'imperial'
             });
         </script>
-	</body>
+    </body>
 </html>
