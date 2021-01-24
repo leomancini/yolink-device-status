@@ -3,98 +3,108 @@
 
 * {
 	-webkit-font-smoothing: antialiased;
-	font-size: 24px;
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-::selection {
-	
-}
-
 html, body {
-	font-size: 0;
-
-	@media @mobile {
-		padding: 15px 15px 50px 15px;
-	}
-
-	@media @desktop {
-		padding: 50px 50px 70px 50px;
-	}
-
-	.header {
-		border-radius: 40px;
-		box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-
+	#container {
+		font-size: 0;
+	
 		@media @mobile {
-			padding: 35px;
-			width: calc(100% - 70px);
-			margin-bottom: 50px;
+			padding: 30px 30px 100px 30px;
 		}
-
+	
 		@media @desktop {
-			padding: 50px;
-			width: calc(100% - 100px);
-			margin-bottom: 120px;
+			padding: 100px 100px 140px 100px;
+			max-width: 60%;
+			margin: 0 auto;
 		}
 
-		h1 {
-			font-weight: normal;
-			margin: 0;
-			color: #FFFFFF;
+		.header {
+			border-radius: 30px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 	
 			@media @mobile {
-				font-size: 40px;
-				line-height: 48px;
+				padding: 35px 25px 35px 35px;
+				width: calc(100% - (35px + 25px));
+				margin-bottom: 50px;
 			}
 	
 			@media @desktop {
-				font-size: 48px;
-				line-height: 60px;
+				padding: 50px 50px 50px 50px;
+				width: calc(100% - (50px + 50px));
+				margin-bottom: 120px;
 			}
 	
-			.description {
-				font-size: inherit;
-				opacity: 0.6;
-			}
-
-			b {
-				font-size: inherit;
-				font-weight: medium;
+			h1 {
+				font-weight: normal;
+				margin: 0;
+				color: #FFFFFF;
+		
+				@media @mobile {
+					font-size: 28px;
+					line-height: 38px;
+				}
+		
+				@media @desktop {
+					font-size: 48px;
+					line-height: 64px;
+				}
+		
+				.description {
+					font-size: inherit;
+					opacity: 0.6;
+				}
+	
+				b {
+					font-size: inherit;
+					font-weight: medium;
+	
+					.value {
+						font-size: inherit;
+						white-space: nowrap;
+					}
+				}
 			}
 		}
-	}
-	
-	h2 {
-		color: rgba(0, 0, 0, 0.3);
-		margin-top: 70px;
-		font-size: 18px;
-		text-transform: uppercase;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-		padding-bottom: 10px;
-		margin-bottom: 20px;
-	}
-
-	.labelValueGroup {
-		display: inline-block;
-		width: 50%;
-
-		label {
-			display: block;
-			color: rgba(0, 0, 0, 0.5);
+		
+		h2 {
+			color: rgba(0, 0, 0, 0.3);
+			margin-top: 70px;
+			font-size: 18px;
+			text-transform: uppercase;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			padding-bottom: 20px;
 			margin-bottom: 20px;
 		}
+	
+		.labelValueGroup {
+			display: inline-block;
+			width: 45%;
+			margin-right: 10%;
 
-		.value {
-			display: block;
-			font-weight: bold;
-
-			@media @mobile {
-				font-size: 40px;
+			&.humidity {
+				margin-right: 0;
 			}
-
-			@media @desktop {
-				font-size: 60px;
+	
+			label {
+				font-size: 24px;
+				display: block;
+				color: rgba(0, 0, 0, 0.3);
+				margin-bottom: 10px;
+			}
+	
+			.value {
+				display: block;
+				font-weight: bold;
+	
+				@media @mobile {
+					font-size: 50px;
+				}
+	
+				@media @desktop {
+					font-size: 64px;
+				}
 			}
 		}
 	}

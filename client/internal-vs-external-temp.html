@@ -3,7 +3,7 @@
 	<head>
         <meta charset='UTF-8'>
 		<title>Internal vs External Weather</title>
-		<link rel='stylesheet/less' href='resources/css/style.less?v=5'>
+		<link rel='stylesheet/less' href='resources/css/style.less?v=6'>
 		<script src='//cdnjs.cloudflare.com/ajax/libs/less.js/3.11.1/less.min.js'></script>
 		<meta name='viewport' content='width=device-width, initial-scale=1'>
 	</head>
@@ -62,8 +62,8 @@
 
             function generateHeaderBackgroundColor(tempDifference) {
                 const headerBackgroundColors = {
-                    warm: ['#F0A534', '#F07834', '#F04B34'],
-                    cold: ['#40A3DA', '#2283DD', '#145FCF']
+                    warm: ['#F09000', '#F05600', '#F01D00'],
+                    cold: ['#008CDA', '#0073DD', '#0053CF']
                 }
 
                 let headerBackgroundColor = '#E3E3E3';
@@ -90,25 +90,25 @@
 
                 if (params.tempDifference > 0) {
                     tempDifferenceString =
-                        `${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel} warmer`;
+                        `<span class='value'>${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel}</span> warmer`;
                 } else {
                     tempDifferenceString =
-                        `${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel} colder`;
+                        `<span class='value'>${Math.abs(formatNumber(params.tempDifference))}° ${params.unitsLabel}</span> colder`;
                 }
 
                 let humidityDifferenceString = '';
 
                 if (params.humidityDifference > 0) {
                     humidityDifferenceString =
-                        `${Math.abs(formatNumber(params.humidityDifference))}% more humid`;
+                        `<span class='value'>${Math.abs(formatNumber(params.humidityDifference))}%</span> more humid`;
                 } else {
                     humidityDifferenceString =
-                        `${Math.abs(formatNumber(params.humidityDifference))}% less humid`;
+                        `<span class='value'>${Math.abs(formatNumber(params.humidityDifference))}%</span> less humid`;
                 }
 
                 return {
-                    tempDifferenceString,
-                    humidityDifferenceString
+                    temp: tempDifferenceString,
+                    humidity: humidityDifferenceString
                 }
             }
 
@@ -118,65 +118,64 @@
 
                 const unitsLabel = params.units === 'imperial' ? 'F' : 'C';
 
-                const internalWeatherBedroom = await getInternalWeather({ room: 'Bedroom', units: params.units });
-                // const internalWeatherBedroom = {
-                //     temperature: 35,
-                //     humidity: 10
-                // };
-                const externalWeather = await getExternalWeather({ zipCode: params.zipCode, units: params.units });
+                const internalWeatherBedroom = await getInternalWeather({
+                    room: 'Bedroom',
+                    units: params.units
+                });
+
+                const externalWeather = await getExternalWeather({
+                    zipCode: window.secrets['Location'].ZipCode,
+                    units: params.units
+                });
 
                 const tempDifference = internalWeatherBedroom.temperature - externalWeather.main.temp;
                 const humidityDifference = internalWeatherBedroom.humidity - externalWeather.main.humidity;
 
-                let {
-                    tempDifferenceString,
-                    humidityDifferenceString
-                } = generateDifferenceString({
+                let differenceStrings = generateDifferenceString({
                     tempDifference,
                     humidityDifference,
                     unitsLabel
                 });
 
-                let bodyHTML = `
-                    <div class='header' style='background-color: ${generateHeaderBackgroundColor(tempDifference)};'>
-                        <h1><span class='description'>It's currently</span> <b>${tempDifferenceString}</b> <span class='description'>and</span> <b>${humidityDifferenceString}</b> <span class='description'>in the bedroom than outside in ${externalWeather.name}.</span></h1>
-                    </div>
-                    <h2>Internal (Bedroom)</h2>
-                    <div class='labelValueGroup'>
-                        <label>Temp</label>
-                        <div class='value'>${formatNumber(internalWeatherBedroom.temperature)}° ${unitsLabel}</div>
-                    </div>
-                    <div class='labelValueGroup'>
-                        <label>Humidity</label>
-                        <div class='value'>${formatNumber(internalWeatherBedroom.humidity)}%</div>
-                    </div>
-                    <h2>External (${externalWeather.name})</h2>
-                    <div class='labelValueGroup'>
-                        <label>Temp</label>
-                        <div class='value'>${formatNumber(externalWeather.main.temp)}° ${unitsLabel}</div>
-                    </div>
-                    <div class='labelValueGroup'>
-                        <label>Humidity</label>
-                        <div class='value'>${formatNumber(externalWeather.main.humidity)}%</div>
-                    </div>
-                    <br>
-                    <h2>Difference</h2>
-                    <div class='labelValueGroup'>
-                        <label>Temp</label>
-                        <div class='value'>${tempDifference > 0 ? '+' : ''}${formatNumber(tempDifference)}° ${unitsLabel}</div>
-                    </div>
-                    <div class='labelValueGroup'>
-                        <label>Humidity</label>
-                        <div class='value'>${humidityDifference > 0 ? '+' : ''}${formatNumber(humidityDifference)}%</div>
+                document.querySelector('body').innerHTML = `
+                    <div id='container'>
+                        <div class='header' style='background-color: ${generateHeaderBackgroundColor(tempDifference)};'>
+                            <h1><span class='description'>It's currently</span> <b>${differenceStrings.temp}</b> <span class='description'>and</span> <b>${differenceStrings.humidity}</b> <span class='description'>in the bedroom than outside in ${externalWeather.name}.</span></h1>
+                        </div>
+                        <h2>Internal (Bedroom)</h2>
+                        <div class='labelValueGroup temp'>
+                            <label>Temp</label>
+                            <div class='value'>${formatNumber(internalWeatherBedroom.temperature)}° ${unitsLabel}</div>
+                        </div>
+                        <div class='labelValueGroup humidity'>
+                            <label>Humidity</label>
+                            <div class='value'>${formatNumber(internalWeatherBedroom.humidity)}%</div>
+                        </div>
+                        <h2>External (${externalWeather.name})</h2>
+                        <div class='labelValueGroup temp'>
+                            <label>Temp</label>
+                            <div class='value'>${formatNumber(externalWeather.main.temp)}° ${unitsLabel}</div>
+                        </div>
+                        <div class='labelValueGroup humidity'>
+                            <label>Humidity</label>
+                            <div class='value'>${formatNumber(externalWeather.main.humidity)}%</div>
+                        </div>
+                        <br>
+                        <h2>Difference</h2>
+                        <div class='labelValueGroup temp'>
+                            <label>Temp</label>
+                            <div class='value'>${tempDifference > 0 ? '+' : ''}${formatNumber(tempDifference)}° ${unitsLabel}</div>
+                        </div>
+                        <div class='labelValueGroup humidity'>
+                            <label>Humidity</label>
+                            <div class='value'>${humidityDifference > 0 ? '+' : ''}${formatNumber(humidityDifference)}%</div>
+                        </div>
                     </div>
                 `;
-
-                document.querySelector('body').innerHTML = bodyHTML;
             }
 
             render({
-                units: 'imperial',
-                zipCode: 94115
+                units: 'imperial'
             });
         </script>
 	</body>
